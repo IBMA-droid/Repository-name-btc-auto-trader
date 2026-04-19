@@ -2,11 +2,11 @@ name: BTC自動売買ボット（毎日09:00 JST）
 
 on:
   schedule:
-    - cron: '0 0 * * *'   # 毎日00:00 UTC = 09:00 JST
-  workflow_dispatch:        # 手動実行ボタンも有効化
+    - cron: '0 0 * * *'
+  workflow_dispatch:
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+permissions:
+  contents: write
 
 jobs:
   run-bot:
@@ -21,14 +21,20 @@ jobs:
           python-version: '3.11'
 
       - name: ライブラリをインストール
-        run: |
-          pip install yfinance pandas numpy matplotlib requests
+        run: pip install yfinance pandas numpy matplotlib requests
 
-      - name: ボット実行
+      - name: ボット実行（HTML生成）
         env:
           BITFLYER_API_KEY:    ${{ secrets.BITFLYER_API_KEY }}
           BITFLYER_API_SECRET: ${{ secrets.BITFLYER_API_SECRET }}
-          FTP_SERVER:          ${{ secrets.FTP_SERVER }}
-          FTP_USERNAME:        ${{ secrets.FTP_USERNAME }}
-          FTP_PASSWORD:        ${{ secrets.FTP_PASSWORD }}
         run: python bot/main.py
+
+      - name: ダッシュボードをリポジトリに保存
+        run: |
+          git config --global user.email "bot@github.com"
+          git config --global user.name "BTC Bot"
+          mkdir -p docs
+          cp btc_dashboard.html docs/index.html
+          git add docs/index.html
+          git diff --staged --quiet || git commit -m "📊 ダッシュボード更新: $(date '+%Y-%m-%d %H:%M JST')"
+          git push
