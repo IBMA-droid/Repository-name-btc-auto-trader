@@ -5,6 +5,9 @@ on:
     - cron: '0 0 * * *'   # 毎日00:00 UTC = 09:00 JST
   workflow_dispatch:        # 手動実行ボタンも有効化
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   run-bot:
     runs-on: ubuntu-latest
