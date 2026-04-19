@@ -1,0 +1,31 @@
+name: BTC自動売買ボット（毎日09:00 JST）
+
+on:
+  schedule:
+    - cron: '0 0 * * *'   # 毎日00:00 UTC = 09:00 JST
+  workflow_dispatch:        # 手動実行ボタンも有効化
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: コードを取得
+        uses: actions/checkout@v4
+
+      - name: Python セットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: ライブラリをインストール
+        run: |
+          pip install yfinance pandas numpy matplotlib requests
+
+      - name: ボット実行
+        env:
+          BITFLYER_API_KEY:    ${{ secrets.BITFLYER_API_KEY }}
+          BITFLYER_API_SECRET: ${{ secrets.BITFLYER_API_SECRET }}
+          FTP_SERVER:          ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME:        ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD:        ${{ secrets.FTP_PASSWORD }}
+        run: python bot/main.py
