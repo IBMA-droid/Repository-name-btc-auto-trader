@@ -1,1 +1,45 @@
+name: BTC 自動売買ボット（毎時間）
 
+on:
+  schedule:
+    - cron: '5 * * * *'   # 毎時 05分に実行（1時間足の確定後）
+  workflow_dispatch:        # 手動実行ボタン
+
+permissions:
+  contents: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  trade:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Python 3.11 セットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 依存パッケージをインストール
+        run: pip install yfinance pandas numpy requests
+
+      - name: 売買ボット実行
+        run: python bot/trader.py
+        env:
+          BITFLYER_API_KEY:    ${{ secrets.BITFLYER_API_KEY }}
+          BITFLYER_API_SECRET: ${{ secrets.BITFLYER_API_SECRET }}
+          PAPER_MODE:          ${{ secrets.PAPER_MODE }}        # "true" or "false"
+          TRADE_BUDGET_JPY:    ${{ secrets.TRADE_BUDGET_JPY }}  # 例: "15000"
+
+      - name: ログをコミット（変化があれば）
+        run: |
+          git config --global user.email "bot@github.com"
+          git config --global user.name "BTC Trader Bot"
+          git add bot/position.json bot/trade_log.csv || true
+          git diff --staged --quiet || git commit -m "🤖 取引ログ更新 $(date +'%Y-%m-%d %H:%M' -d '+9 hours') JST"
+          git push || true
