@@ -1,6 +1,6 @@
 {
-  "holding": false,
-  "size": 0.0,
-  "entry_price": 0.0,
-  "entry_time": ""
+  "holding": true,
+  "size": 0.001,
+  "entry_price": 12216237.0,
+  "entry_time": "2026-04-28T01:12:03.160742+09:00"
 }
